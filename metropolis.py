@@ -4,6 +4,7 @@ from flask import Flask, request
 from kafka import KafkaProducer
 
 from MetropolisControlSystem import MetropolisControlSystem
+from MetropolisStorage.Storage import Storage
 
 app = Flask(__name__)
 
