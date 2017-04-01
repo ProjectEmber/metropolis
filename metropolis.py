@@ -110,10 +110,6 @@ if __name__ == '__main__':
         print("No valid control unit name or kafka address provided!")
         exit(1)
 
-    print("name", control_unit_name)
-    print("kafka", kafka_remote_addr)
-    exit(0)
-
     # INITIALIZATION
     # 1) initializing storage
     if not storage.initialize():
