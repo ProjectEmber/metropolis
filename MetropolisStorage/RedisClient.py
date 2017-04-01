@@ -79,3 +79,14 @@ class RedisClient:
             return self.redis().set(tag, obj)
         except:
             return False
+
+    def deleteObject(self, tag) -> bool:
+        """
+        To delete an object from the redis server
+        :param tag: string, tag associated with the object
+        :return: True if success or False
+        """
+        try:
+            return self.redis().delete(tag) == 1
+        except:
+            return None

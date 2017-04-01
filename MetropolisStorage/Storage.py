@@ -19,7 +19,17 @@ class Storage:
         # redis server variables
         self._host    = host
         self._port    = port
-
+        # creating example lamp
+        self._lamp    = {
+                            "id"               : 0,
+                            "address"          : "<example street>",
+                            "model"            : "<example model>",
+                            "consumption"      : 0,
+                            "power_on"         : True,
+                            "level"            : 4.2,
+                            "last_replacement" : 12345689,
+                            "sent"             : 12345689
+                        }
 
     def lamps(self) -> RedisClient:
         """
@@ -33,7 +43,6 @@ class Storage:
 
         return self._lamps
 
-
     def control(self) -> RedisClient:
         """
         To create a new db partition for control
@@ -45,6 +54,29 @@ class Storage:
             self._control.connect()
 
         return self._control
+
+    def existLamp(self, tag) -> bool:
+        """
+        To verify if an elem exist
+        :param tag: string, to identify the object
+        :return: True or False
+        """
+        return self.lamps().getObject(tag) is not None
+
+    def isLamp(self, lamp) -> bool:
+        """
+        To verify if an elem is a proper lamp
+        :param lamp: dictionary, lamp candidate 
+        :return: True or False
+        """
+        for key in self._lamp:
+            # to satisfy every attribute
+            if key not in lamp:
+                return False
+            # check for datatype
+            if not type(self._lamp[key]) == type(lamp[key]):
+                return False
+        return True
 
 
     def initialize(self) -> bool:
