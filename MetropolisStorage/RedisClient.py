@@ -15,7 +15,6 @@ class RedisClient:
         self._db    = db
         self._redis = None
 
-
     def host(self, address=None) -> str:
         """
         To select a different host or to retrieve the actual one
@@ -27,7 +26,6 @@ class RedisClient:
         else:
             self._host = address
             return self._host
-
 
     def port(self, port=None) -> int:
         """
@@ -41,14 +39,12 @@ class RedisClient:
             self._port = port
             return self._port
 
-
     def redis(self) -> Redis:
         """
         To get the redis instance (if any)
         :return: the redis instance or None 
         """
         return self._redis
-
 
     def connect(self) -> Redis:
         """
@@ -61,7 +57,6 @@ class RedisClient:
         except:
             return None
 
-
     def getObject(self, tag) -> object:
         """
         To get an object stored in redis server (if any)
@@ -72,7 +67,6 @@ class RedisClient:
             return self.redis().get(tag)
         except:
             return None
-
 
     def setObject(self, tag, obj) -> bool:
         """
