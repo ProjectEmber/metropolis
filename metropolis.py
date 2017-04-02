@@ -11,12 +11,12 @@ app = Flask(__name__)
 
 # init storage variable
 # (in this implementation we assume redis is local to control unit!)
-storage = Storage("localhost", 6379)
+storage = Storage("db.project-ember.city", 6379)
 
 # init control unit name
-control_unit_name = ""
+control_unit_name = "cu1"
 # init kafka remote address
-kafka_remote_addr = ""
+kafka_remote_addr = "kafka.project-ember.city:9092"
 
 
 @app.route('/')
@@ -32,8 +32,9 @@ def lamp_management():
         if not storage.isLamp(lamp):
             return "Incompatible datatypes", 403
         else:
-            redis_connection = storage.lamps().setObject(int(jsonlamp["id"]), str(jsonlamp))
-            if redis_connection:
+            redis_lamp_connection = storage.lamps().setObject(int(lamp["id"]), str(jsonlamp))
+            redis_control_connection = storage.control().setObject(int(lamp["id"]), str(request.remote_addr))
+            if redis_lamp_connection and redis_control_connection:
                 return "OK", 200
             else:
                 return "Internal server error", 500
@@ -44,8 +45,9 @@ def lamp_management():
         if not storage.isLamp(lamp):
             return "Incompatible datatypes", 403
         else:
-            redis_connection = storage.lamps().setObject(int(jsonlamp["id"]), str(jsonlamp))
-            if redis_connection:
+            redis_lamp_connection = storage.lamps().setObject(int(lamp["id"]), str(jsonlamp))
+            redis_control_connection = storage.control().setObject(int(lamp["id"]), str(request.remote_addr))
+            if redis_lamp_connection and redis_control_connection:
                 return "OK", 200
             else:
                 return "Internal server error", 500
@@ -72,17 +74,17 @@ def lamp_control():
             producer = KafkaProducer(bootstrap_servers=kafka_remote_addr)
             producer.send('lamp', json.dumps(lamp).encode('utf-8'))
             producer.close()
-            return 200
+            return "OK", 200
         except:
-            return 500
+            return "Internal server error", 500
     else:
-        return 403  # forbidden operation
+        return "Forbidden", 403  # forbidden operation
 
 
 if __name__ == '__main__':
     # COMMAND LINE
     # reading from command line params
-    if (len(sys.argv) != 3) or ("--help" in sys.argv):
+    if "--help" in sys.argv:
         print("USAGE:", "--name=<control_unit_name>", "--kafka=<kafka_remote_addr>:<kafka_port>")
         exit(1)
 
@@ -102,10 +104,10 @@ if __name__ == '__main__':
                     print("No valid control unit name provided!")
                     exit(1)
                 continue
-        # wrong init...
-        if (len(control_unit_name) == 0) or (len(kafka_remote_addr) == 0):
-            print("No valid control unit name or kafka address provided!")
-            exit(1)
+        # # wrong init...
+        # if (len(control_unit_name) == 0) or (len(kafka_remote_addr) == 0):
+        #     print("No valid control unit name or kafka address provided!")
+        #     exit(1)
     except:
         print("No valid control unit name or kafka address provided!")
         exit(1)
@@ -117,7 +119,7 @@ if __name__ == '__main__':
         exit(1)
 
     # 2) initializing control system
-    control_system = MetropolisControlSystem(control_unit_name)
+    control_system = MetropolisControlSystem(control_unit_name, kafka_remote_addr)
     if control_system.initialize() is None:
         print("Error in initialization - Control System... exiting now!")
         exit(1)
