@@ -17,6 +17,8 @@ storage = Storage("db.project-ember.city", 6379)
 control_unit_name = "cu1"
 # init kafka remote address
 kafka_remote_addr = "kafka.project-ember.city:9092"
+# init kafka producer
+producer = None
 
 
 @app.route('/')
@@ -72,8 +74,6 @@ def lamp_control():
     if storage.existLamp(int(lamp["id"])):
         try:
             producer = KafkaProducer(bootstrap_servers=kafka_remote_addr)
-            producer.send('lamp', json.dumps(lamp).encode('utf-8'))
-            producer.close()
             return "OK", 200
         except:
             return "Internal server error", 500
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                     print("No valid control unit name provided!")
                     exit(1)
                 continue
-        # # wrong init...
+        # # wrong init... TODO
         # if (len(control_unit_name) == 0) or (len(kafka_remote_addr) == 0):
         #     print("No valid control unit name or kafka address provided!")
         #     exit(1)
@@ -125,5 +125,12 @@ if __name__ == '__main__':
         exit(1)
     control_system.start()
 
-    # 3) initializing flask server
+    # 3) initializing kafka producer
+    try:
+        producer = KafkaProducer(bootstrap_servers=kafka_remote_addr)
+    except:
+        print("Error in initialization - Kafka producer... exiting now!")
+
+
+    # 4) initializing flask server
     app.run()
