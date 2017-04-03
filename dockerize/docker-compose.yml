@@ -1,0 +1,16 @@
+version: "2"
+services:
+  redis-server:
+    image: redis
+    container_name: metropolis-redis
+    ports:
+      - "6379:6379"
+  
+  controlunit:
+    image: python:3.4.6-alpine
+    container_name: metropolis-control-unit
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/code
+    command: sh ./code/init.sh
