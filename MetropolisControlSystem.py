@@ -25,7 +25,7 @@ class MetropolisControlSystem(Thread):
 
     def initialize(self):
         try:
-            self._consumer = KafkaConsumer(self._name, bootstrap_servers=self._server, group_id="thegrid")
+            self._consumer = KafkaConsumer('control', self._name, bootstrap_servers=self._server, group_id="thegrid")
         except:
             self._consumer = None
         return self._consumer
