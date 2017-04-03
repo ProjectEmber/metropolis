@@ -131,4 +131,4 @@ if __name__ == '__main__':
         print("Error in initialization - Kafka producer... exiting now!")
 
     # 4) initializing flask server
-    app.run()
+    app.run(host='0.0.0.0')
