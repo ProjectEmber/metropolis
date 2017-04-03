@@ -68,8 +68,7 @@ def lamp_management():
 
 @app.route('/control', methods=['POST'])
 def lamp_control():
-    jsonlamp = request.form  # it should be the whole body
-    lamp = json.loads(jsonlamp)
+    lamp = request.form  # it should be the whole body
     if storage.exist_lamp(int(lamp["id"])):
         try:
             producer.send('lamp', json.dumps(lamp).encode('utf-8'))
