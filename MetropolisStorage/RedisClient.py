@@ -57,7 +57,7 @@ class RedisClient:
         except:
             return None
 
-    def getObject(self, tag) -> object:
+    def get_object(self, tag) -> object:
         """
         To get an object stored in redis server (if any)
         :param tag: string, the tag associated with object
@@ -68,7 +68,7 @@ class RedisClient:
         except:
             return None
 
-    def setObject(self, tag, obj) -> bool:
+    def set_object(self, tag, obj) -> bool:
         """
         To store or update an object in the redis server
         :param tag: string, the tag associated with object
@@ -80,7 +80,7 @@ class RedisClient:
         except:
             return False
 
-    def deleteObject(self, tag) -> bool:
+    def delete_object(self, tag) -> bool:
         """
         To delete an object from the redis server
         :param tag: string, tag associated with the object

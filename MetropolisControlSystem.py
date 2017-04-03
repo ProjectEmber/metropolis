@@ -36,6 +36,6 @@ class MetropolisControlSystem(Thread):
                 # convert the message as a json object to get the id attribute
                 jsonlamp = json.loads(msg)
                 # get the ip address linked to the given id
-                ip_addr = storage.control().getObject(int(jsonlamp["id"]))
+                ip_addr = storage.control().get_object(int(jsonlamp["id"]))
                 # send the message to the rightful lamp
                 requests.get(ip_addr, msg)

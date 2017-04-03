@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # init storage variable
 # (in this implementation we assume redis is local to control unit!)
-storage = Storage("db.project-ember.city", 6379)
+storage = Storage("localhost", 6379)
 
 # init control unit name
 control_unit_name = "cu1"
@@ -29,12 +29,11 @@ def lamp_management():
     if request.method == 'PUT':
         jsonlamp = request.form['lamp']
         lamp = json.loads(jsonlamp)
-        if not storage.isLamp(lamp):
+        if not storage.is_lamp(lamp):
             return "Incompatible datatypes", 403
         else:
-            redis_lamp_connection = storage.lamps().setObject(int(lamp["id"]), str(jsonlamp))
-            redis_control_connection = storage.control().setObject(int(lamp["id"]), str(request.remote_addr))
-            if redis_lamp_connection and redis_control_connection:
+            redis_lamp_connection = storage.lamps().set_object(int(lamp["id"]), str(jsonlamp))
+            if redis_lamp_connection:
                 return "OK", 200
             else:
                 return "Internal server error", 500
@@ -42,12 +41,11 @@ def lamp_management():
     if request.method == 'POST':
         jsonlamp = request.form['lamp']
         lamp = json.loads(jsonlamp)
-        if not storage.isLamp(lamp):
+        if not storage.is_lamp(lamp):
             return "Incompatible datatypes", 403
         else:
-            redis_lamp_connection = storage.lamps().setObject(int(lamp["id"]), str(jsonlamp))
-            redis_control_connection = storage.control().setObject(int(lamp["id"]), str(request.remote_addr))
-            if redis_lamp_connection and redis_control_connection:
+            redis_lamp_connection = storage.lamps().set_object(int(lamp["id"]), str(jsonlamp))
+            if redis_lamp_connection:
                 return "OK", 200
             else:
                 return "Internal server error", 500
@@ -55,7 +53,7 @@ def lamp_management():
     if request.method == 'DELETE':
         lamp_id = request.args.get("id")
         print(lamp_id)
-        redis_connection = storage.lamps().deleteObject(lamp_id)
+        redis_connection = storage.lamps().delete_object(lamp_id)
         if redis_connection is None:
             return "Internal server error", 500
         if redis_connection:
@@ -69,11 +67,12 @@ def lamp_management():
 @app.route('/control', methods=['POST'])
 def lamp_control():
     lamp = request.form  # it should be the whole body
-    if storage.existLamp(int(lamp["id"])):
+    if storage.exist_lamp(int(lamp["id"])):
         try:
             producer = KafkaProducer(bootstrap_servers=kafka_remote_addr)
             producer.send('lamp', json.dumps(lamp).encode('utf-8'))
             producer.close()
+            storage.control().set_object(int(lamp["id"]), str(request.remote_addr))
             return "OK", 200
         except:
             return "Internal server error", 500

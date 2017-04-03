@@ -2,6 +2,7 @@ from redis import StrictRedis as Redis
 
 from MetropolisStorage.RedisClient import RedisClient
 
+
 class Storage:
     def __init__(self, host="localhost", port=6379):
         # macro used to partition the db
@@ -55,15 +56,15 @@ class Storage:
 
         return self._control
 
-    def existLamp(self, tag) -> bool:
+    def exist_lamp(self, tag) -> bool:
         """
         To verify if an elem exist
         :param tag: string, to identify the object
         :return: True or False
         """
-        return self.lamps().getObject(tag) is not None
+        return self.lamps().get_object(tag) is not None
 
-    def isLamp(self, lamp) -> bool:
+    def is_lamp(self, lamp) -> bool:
         """
         To verify if an elem is a proper lamp
         :param lamp: dictionary, lamp candidate 
@@ -77,7 +78,6 @@ class Storage:
             if not type(self._lamp[key]) == type(lamp[key]):
                 return False
         return True
-
 
     def initialize(self) -> bool:
         # initializing partitions
