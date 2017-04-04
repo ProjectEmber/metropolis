@@ -16,7 +16,7 @@ storage = Storage("localhost", 6379)
 # init control unit name
 control_unit_name = "cu1"
 # init kafka remote address
-kafka_remote_addr = "kafka.project-ember.city:9092"
+kafka_remote_addr = "localhost:9092"
 # init kafka producer
 producer = None
 
