@@ -2,6 +2,7 @@ import json
 from threading import Thread
 
 import requests
+import sys
 from kafka import KafkaConsumer
 
 from MetropolisStorage.Storage import Storage
@@ -25,7 +26,7 @@ class MetropolisControlSystem(Thread):
 
     def initialize(self):
         try:
-            self._consumer = KafkaConsumer('control', self._name, bootstrap_servers=self._server, group_id="thegrid")
+            self._consumer = KafkaConsumer(self._name, bootstrap_servers=self._server)
         except:
             self._consumer = None
         return self._consumer
@@ -35,6 +36,7 @@ class MetropolisControlSystem(Thread):
             for msg in self._consumer:
                 # convert the message as a json object to get the id attribute
                 jsonlamp = json.loads(msg)
+                print(jsonlamp, file=sys.stderr)
                 # get the ip address linked to the given id
                 ip_addr = storage.control().get_object(int(jsonlamp["id"]))
                 # send the message to the rightful lamp

@@ -7,12 +7,12 @@ services:
       - "6379:6379"
     network_mode: "host"
   
-  controlunit:
-    image: python:3.4.6-alpine
-    container_name: metropolis-control-unit
-    ports:
-      - "5000:5000"
-    volumes:
-      - .:/code
-    command: sh ./code/init.sh
-    network_mode: "host"
+#  controlunit:
+#    image: python:3.4.6-alpine
+#    container_name: metropolis-control-unit
+#    ports:
+#      - "5000:5000"
+#    volumes:
+#      - .:/code
+#    command: sh ./code/init.sh
+#    network_mode: "host"
