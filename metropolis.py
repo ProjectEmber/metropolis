@@ -14,9 +14,9 @@ app = Flask(__name__)
 storage = Storage("localhost", 6379)
 
 # init control unit name
-control_unit_name = "cu1"
+control_unit_name = ""
 # init kafka remote address
-kafka_remote_addr = "localhost:9092"
+kafka_remote_addr = ""
 # init kafka producer
 producer = None
 
@@ -72,12 +72,69 @@ def lamp_control():
     if storage.exist_lamp(int(lamp["id"])):
         try:
             producer.send('lamp', json.dumps(lamp).encode('utf-8'))
+            storage.api().set_object(int(lamp["id"]), lamp)
             storage.control().set_object(int(lamp["id"]), str(request.remote_addr))
             return "OK", 200
         except:
             return "Internal server error", 500
     else:
         return "Forbidden", 403  # forbidden operation
+
+
+@app.route('/api/search/<int:lamp_id>', methods=[''])
+def get_api_lamp(lamp_id):
+    lamp = storage.api().get_object(lamp_id)
+    if lamp is not None:
+        return lamp, 200
+    else:
+        return "Not found", 404
+
+
+@app.route('/api/stats')
+def get_api_stats():
+    # preparing result dict
+    result = {
+        "total": 0,
+        "powered_on": 0,
+        "consumption": 0,
+        "level": 0
+    }
+    try:
+        # retrieving raw stats from redis
+        for elem in storage.get_all():
+            result["total"] += 1
+            lamp = storage.api().get_object(elem)
+            if lamp["power_on"] is True:
+                result["powered_on"] += 1
+            result["consumption"] += lamp["consumption"]
+            result["level"] += lamp["level"]
+
+        # updating average
+        if result["total"] != 0:
+            result["consumption"] /= result["total"]
+            result["level"] /= result["total"]
+
+        # returing stats
+        return result, 200
+    except:
+        return "Internal server error", 500
+
+
+@app.route("/api/ids")
+def get_api_ids():
+    # preparing result
+    result = {
+        "total": 0,
+        "lamps": []
+    }
+    try:
+        # retrieving lamps index iterating over redis
+        for elem in storage.get_all():
+            result["total"] += 1
+            result["lamps"].append(elem)
+        return result, 200
+    except:
+        return "Internal server error", 500
 
 
 if __name__ == '__main__':
@@ -103,10 +160,10 @@ if __name__ == '__main__':
                     print("No valid control unit name provided!")
                     exit(1)
                 continue
-        # # wrong init... TODO
-        # if (len(control_unit_name) == 0) or (len(kafka_remote_addr) == 0):
-        #     print("No valid control unit name or kafka address provided!")
-        #     exit(1)
+        if (len(control_unit_name) == 0) or (len(kafka_remote_addr) == 0):
+            print("No valid control unit name or kafka address provided! Setting to default")
+            control_unit_name = "cu1"
+            kafka_remote_addr = "localhost:9092"
     except:
         print("No valid control unit name or kafka address provided!")
         exit(1)
@@ -118,7 +175,7 @@ if __name__ == '__main__':
         exit(1)
 
     # 2) initializing control system
-    control_system = MetropolisControlSystem(control_unit_name, kafka_remote_addr)
+    control_system = MetropolisControlSystem(control_unit_name, kafka_remote_addr, storage)
     if control_system.initialize() is None:
         print("Error in initialization - Control System... exiting now!")
         exit(1)

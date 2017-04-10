@@ -7,21 +7,21 @@ from kafka import KafkaConsumer
 
 from MetropolisStorage.Storage import Storage
 
-storage = Storage("localhost", 6379)
-
 
 class MetropolisControlSystem(Thread):
-    def __init__(self, name, kafka_server):
+    def __init__(self, name, kafka_server, storage):
         """
         This class will be the handler of the control requests 
         coming from the data processing system
         
         :param name: string, name of the control unit 
         :param kafka_server: string, kafka server address 
+        :param storage: MetropolisStorage.Storage 
         """
         Thread.__init__(self)
         self._name =     name
         self._server =   kafka_server
+        self._storage =  storage
         self._consumer = None
 
     def initialize(self):
@@ -36,8 +36,9 @@ class MetropolisControlSystem(Thread):
             for msg in self._consumer:
                 # convert the message as a json object to get the id attribute
                 jsonlamp = json.loads(msg)
-                print(jsonlamp, file=sys.stderr)
+                # for debug purposes ... TODO remove in production
+                print(jsonlamp)
                 # get the ip address linked to the given id
-                ip_addr = storage.control().get_object(int(jsonlamp["id"]))
+                ip_addr = self._storage.lamps().get_object(int(jsonlamp["id"]))
                 # send the message to the rightful lamp
                 requests.get(ip_addr, msg)

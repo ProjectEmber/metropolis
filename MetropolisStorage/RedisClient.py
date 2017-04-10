@@ -52,7 +52,7 @@ class RedisClient:
         :return: the redis instance or None if exception occurred
         """
         try:
-            self._redis = Redis(self.host(), self.port())
+            self._redis = Redis(self.host(), self.port(), self._db)
             return self.redis()
         except:
             return None
