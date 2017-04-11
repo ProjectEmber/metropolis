@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from threading import Thread
 
 import requests
@@ -26,7 +27,7 @@ class MetropolisControlSystem(Thread):
 
     def initialize(self):
         try:
-            self._consumer = KafkaConsumer(self._name, bootstrap_servers=self._server)
+            self._consumer = KafkaConsumer('control', bootstrap_servers=self._server)
         except:
             self._consumer = None
         return self._consumer
@@ -40,5 +41,7 @@ class MetropolisControlSystem(Thread):
                 print(jsonlamp)
                 # get the ip address linked to the given id
                 ip_addr = self._storage.lamps().get_object(int(jsonlamp["id"]))
+                if int(jsonlamp["id"]) == 750:
+                    print("Returned:", datetime.now().timestamp())
                 # send the message to the rightful lamp
                 requests.get(ip_addr, msg)

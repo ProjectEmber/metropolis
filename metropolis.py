@@ -1,13 +1,20 @@
 import json
 import sys
+from datetime import datetime
 
 from flask import Flask, request
 from kafka import KafkaProducer
+from werkzeug.datastructures import MultiDict
 
 from MetropolisControlSystem import MetropolisControlSystem
 from MetropolisStorage.Storage import Storage
 
 app = Flask(__name__)
+
+
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # init storage variable
 # (in this implementation we assume redis is local to control unit!)
@@ -72,6 +79,8 @@ def lamp_control():
     if storage.exist_lamp(int(lamp["id"])):
         try:
             producer.send('lamp', json.dumps(lamp).encode('utf-8'))
+            if int(lamp["id"]) == 750:
+                print("Arrived:", datetime.now().timestamp())
             storage.api().set_object(int(lamp["id"]), lamp)
             storage.control().set_object(int(lamp["id"]), str(request.remote_addr))
             return "OK", 200
@@ -103,7 +112,8 @@ def get_api_stats():
         # retrieving raw stats from redis
         for elem in storage.get_all():
             result["total"] += 1
-            lamp = storage.api().get_object(elem)
+            lamp = MultiDict(storage.api().get_object(int(elem)))
+            print(lamp)
             if lamp["power_on"] is True:
                 result["powered_on"] += 1
             result["consumption"] += lamp["consumption"]
@@ -114,9 +124,10 @@ def get_api_stats():
             result["consumption"] /= result["total"]
             result["level"] /= result["total"]
 
-        # returing stats
+        # returning stats
         return result, 200
-    except:
+    except Exception as e:
+        print(e)
         return "Internal server error", 500
 
 
@@ -131,8 +142,8 @@ def get_api_ids():
         # retrieving lamps index iterating over redis
         for elem in storage.get_all():
             result["total"] += 1
-            result["lamps"].append(elem)
-        return result, 200
+            result["lamps"].append(int(elem))
+        return json.dumps(result), 200
     except:
         return "Internal server error", 500
 
@@ -188,4 +199,4 @@ if __name__ == '__main__':
         print("Error in initialization - Kafka producer... exiting now!")
 
     # 4) initializing flask server
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', threaded=True, debug=False)
