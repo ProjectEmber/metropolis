@@ -79,9 +79,9 @@ def lamp_control():
     if storage.exist_lamp(int(lamp["id"])):
         try:
             producer.send('lamp', json.dumps(lamp).encode('utf-8'))
-            if int(lamp["id"]) == 750:
+            if int(lamp["id"]) == 100:
                 print("Arrived:", datetime.now().timestamp())
-            storage.api().set_object(int(lamp["id"]), lamp)
+            storage.api().set_object(int(lamp["id"]), json.dumps(lamp))
             storage.control().set_object(int(lamp["id"]), str(request.remote_addr))
             return "OK", 200
         except:
@@ -112,12 +112,11 @@ def get_api_stats():
         # retrieving raw stats from redis
         for elem in storage.get_all():
             result["total"] += 1
-            lamp = MultiDict(storage.api().get_object(int(elem)))
-            print(lamp)
-            if lamp["power_on"] is True:
+            lamp = json.loads(str(storage.api().get_object(int(elem)), 'utf-8'))
+            if lamp["power_on"] == "True":
                 result["powered_on"] += 1
-            result["consumption"] += lamp["consumption"]
-            result["level"] += lamp["level"]
+            result["consumption"] += float(lamp["consumption"])
+            result["level"] += float(lamp["level"])
 
         # updating average
         if result["total"] != 0:
@@ -125,7 +124,7 @@ def get_api_stats():
             result["level"] /= result["total"]
 
         # returning stats
-        return result, 200
+        return json.dumps(result), 200
     except Exception as e:
         print(e)
         return "Internal server error", 500

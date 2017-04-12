@@ -27,7 +27,7 @@ class MetropolisControlSystem(Thread):
 
     def initialize(self):
         try:
-            self._consumer = KafkaConsumer('control', bootstrap_servers=self._server)
+            self._consumer = KafkaConsumer(self._name, bootstrap_servers=self._server)
         except:
             self._consumer = None
         return self._consumer
@@ -36,12 +36,12 @@ class MetropolisControlSystem(Thread):
         if self._consumer is not None:
             for msg in self._consumer:
                 # convert the message as a json object to get the id attribute
-                jsonlamp = json.loads(msg)
+                jsonlamp = json.loads(str(msg.value, 'utf-8'), encoding='utf-8')
                 # for debug purposes ... TODO remove in production
-                print(jsonlamp)
+                # print(json.loads(str(msg.value)))
                 # get the ip address linked to the given id
-                ip_addr = self._storage.lamps().get_object(int(jsonlamp["id"]))
-                if int(jsonlamp["id"]) == 750:
+                ip_addr = self._storage.control().get_object(int(jsonlamp["id"]))
+                if int(jsonlamp["id"]) == 100:
                     print("Returned:", datetime.now().timestamp())
-                # send the message to the rightful lamp
-                requests.get(ip_addr, msg)
+                # # send the message to the rightful lamp
+                requests.get("http://" + ip_addr, msg)
