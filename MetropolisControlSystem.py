@@ -44,4 +44,4 @@ class MetropolisControlSystem(Thread):
                 if int(jsonlamp["id"]) == 100:
                     print("Returned:", datetime.now().timestamp())
                 # # send the message to the rightful lamp
-                requests.get("http://" + ip_addr, msg)
+                requests.get("http://" + str(ip_addr), msg)

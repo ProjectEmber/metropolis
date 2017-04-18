@@ -173,7 +173,7 @@ if __name__ == '__main__':
         if (len(control_unit_name) == 0) or (len(kafka_remote_addr) == 0):
             print("No valid control unit name or kafka address provided! Setting to default")
             control_unit_name = "cu1"
-            kafka_remote_addr = "localhost:9092"
+            kafka_remote_addr = "35.177.253.155:9092"
     except:
         print("No valid control unit name or kafka address provided!")
         exit(1)
