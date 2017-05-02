@@ -90,7 +90,7 @@ def lamp_control():
         return "Forbidden", 403  # forbidden operation
 
 
-@app.route('/api/search/<int:lamp_id>', methods=[''])
+@app.route('/api/search/<int:lamp_id>', methods=['GET'])
 def get_api_lamp(lamp_id):
     lamp = storage.api().get_object(lamp_id)
     if lamp is not None:
