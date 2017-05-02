@@ -2,7 +2,7 @@
 Project Ember official control unit
 
 ##### Requirements
-Motropolis requires the following libraries (a `requirement.txt` file is included)
+Metropolis requires the following libraries (a `requirement.txt` file is included)
 
 - KafkaPython: https://github.com/dpkp/kafka-python
 - Requests: http://docs.python-requests.org/en/master/
